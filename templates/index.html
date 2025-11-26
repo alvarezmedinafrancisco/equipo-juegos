@@ -145,16 +145,12 @@
                                             <button type="submit" class="btn p-0 border-0 bg-transparent">
                                                 <div class="ratio ratio-1x1">
                                                     {% if card.visible %}
-                                                    <!-- Carta voltaeada con la imagen real -->
-                                                    <img src="{{ card.img }}"
-                                                         alt="Comida saludable"
-                                                         class="img-fluid rounded-3 border shadow">
-                                                {% else %}
-                                                    <!-- Carta NO volteada (reverso) -->
-                                                    <img src="{{ url_for('static', filename='back.jpg') }}"
-                                                        alt="Reverso"
-                                                        class="img-fluid rounded-3 border shadow">
-                                                {% endif %}
+                                                        <!-- Carta volteada con la imagen real -->
+                                                        <img src="{{ card.img }}" alt="Comida saludable" class="img-fluid rounded-3 border shadow">
+                                                    {% else %}
+                                                        <!-- Carta NO volteada (reverso) -->
+                                                        <img src="{{ url_for('static', filename='back.jpg') }}" alt="Reverso" class="img-fluid rounded-3 border shadow">
+                                                    {% endif %}
                                                 </div>
                                             </button>
                                         </form>

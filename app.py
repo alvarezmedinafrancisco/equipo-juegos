@@ -5,16 +5,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'jose_memorama_123'  # pon la que quieras
 
 IMAGES = [
-        "static/aguacate.jpg",
-        "static/almendra.jpg", 
-        "static/arandanos.jpg",  
-        "static/avena.jpg", 
-        "static/brocoli.jpg",  
-        "static/ensalada.jpg",  
-        "static/yougurt.jpg",  
-        "static/salmon.jpg",
-        "static/back.jpg"
-    ]
+    "static/aguacate.jpg",
+    "static/almendra.jpg",
+    "static/arandanos.jpg",
+    "static/avena.jpg",
+    "static/brocoli.jpg",
+    "static/ensalada.jpg",
+    "static/yougurt.jpg",
+    "static/salmon.jpg"
+]
 
 
 def start_game():
@@ -30,9 +29,13 @@ def start_game():
 
 @app.route("/", methods=["GET", "POST"])
 def memorama():
+
     if 'cards' not in session:
         start_game()
 
+    # -----------------------------
+    # MANEJO DE PETICIÓN POST
+    # -----------------------------
     if request.method == "POST":
         action = request.form.get('action')
 
@@ -68,7 +71,7 @@ def memorama():
                         # Pareja acertada
                         matched.extend(flipped)
                         matched_pairs += 1
-                        flipped = []  # ya se quedan visibles por estar en "matched"
+                        flipped = []  # Se vacía porque ya son permanentes
 
             session['flipped'] = flipped
             session['matched'] = matched
@@ -76,7 +79,9 @@ def memorama():
 
         return redirect(url_for('memorama'))
 
-    # GET: mostrar estado actual del juego
+    # -----------------------------
+    # MANEJO GET: mostrar estado actual del juego
+    # -----------------------------
     cards = session.get('cards', [])
     flipped = session.get('flipped', [])
     matched = session.get('matched', [])
