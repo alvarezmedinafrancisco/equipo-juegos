@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Gato{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <h2 class="mb-4 text-success">Juego del gato</h2>
+        
+        <div class="card p-3 shadow-lg mb-4">
+            <p class="lead mb-2">le toca a : <span id="turn-display" class="fw-bold text-success">Fruta</span></p>
+
+            <div id="gato-board" class="d-inline-grid mx-auto" 
+                style="grid-template-columns:repeat(3,90px); gap:5px;">
+                
+              {% for i in range(9) %}
+                <button class="cell btn btn-outline-secondary"
+                      data-index="{{ i }}" 
+                      style="width:90px; height:90px; font-size: 2rem; cursor:pointer;">
+                </button>
+              {% endfor %}
+            </div>
+        </div>
+
+        <button id="reset-button" class="btn btn-primary shadow-sm">Reiniciar Juego</button>
+    </div>
+</div>
+
+<script>
+   
+    const IMGS = {
+        'X': `<img src="{{ url_for("static", filename="fruta.png") }}" width="70" alt="Fruta">`,
+        'O': `<img src="{{ url_for("static", filename="chatarra.png") }}" width="70" alt="Chatarra">`
+    };
+
+    let turn = 'X'; 
+    let board = new Array(9).fill(null); 
+    let gameActive = true;
+
+    const cells = document.querySelectorAll('.cell');
+    const turnDisplay = document.getElementById('turn-display');
+    const resetButton = document.getElementById('reset-button');
+
+    const WINNING_COMBINATIONS = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]            
+    ];
+
+  
+    function checkWinner() {
+        for (const [a, b, c] of WINNING_COMBINATIONS) {
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                gameActive = false;
+                alert(`gano ${board[a] === 'X' ? 'la frutita rica ummm' : 'la chatara mala huakala xc'}!`);
+                return true;
+            }
+        }
+        if (board.every(cell => cell !== null)) {
+            gameActive = false;
+            alert("empataron tontines");
+            return true;
+        }
+        return false;
+    }
+
+
+    function handleClick(event) {
+        const cell = event.target;
+        if (!gameActive || cell.innerHTML.trim() !== '') {
+            return;
+        }
+
+        const index = parseInt(cell.getAttribute('data-index'));
+
+        cell.innerHTML = IMGS[turn];
+        board[index] = turn;
+        
+        if (!checkWinner()) {
+            turn = (turn === 'X' ? 'O' : 'X');
+            
+            if (turn === 'X') {
+                turnDisplay.textContent = 'Fruta';
+                turnDisplay.className = 'fw-bold text-success';
+            } else {
+                turnDisplay.textContent = 'Comida Chatarra';
+                turnDisplay.className = 'fw-bold text-danger';
+            }
+        }
+    }
+
+
+    function resetGame() {
+        board.fill(null);
+        cells.forEach(cell => cell.innerHTML = ''); 
+        turn = 'X';
+        gameActive = true;
+        turnDisplay.textContent = 'Fruta';
+        turnDisplay.className = 'fw-bold text-success';
+    }
+
+   
+    cells.forEach(cell => cell.addEventListener('click', handleClick));
+    resetButton.addEventListener('click', resetGame);
+</script>
+
+{% endblock %}

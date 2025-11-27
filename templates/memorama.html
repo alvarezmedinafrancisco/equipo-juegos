@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Memorama{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-4 text-success">Memorama</h2>
+        
+        <div class="card p-4 shadow-lg mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="me-2 fw-bold">Le has atinado a :</span>
+                    <span id="matched-count" class="badge bg-success fs-5">0</span>
+                    
+                </div>
+                <button id="reset-memorama" class="btn btn-outline-primary btn-sm">
+                    Reiniciar
+                </button>
+            </div>
+
+            <div id="win-message" class="alert alert-success mt-3 d-none">
+                ganaste my friend tienes una memoria de elefante papa
+            </div>
+            
+            <div id="memorama-board" class="row row-cols-4 g-3">
+            </div>
+        </div>
+        
+        <div class="text-center text-muted small mt-4">
+            <p class="mb-0">Lee la biblia</p>
+        </div>
+    </div>
+</div>
+
+<script>
+
+const CARD_IMAGE_NAMES = [
+    'aguacate.jpg', 'almendra.jpg', 'arandanos.jpg', 'avena.jpg',
+    'brocoli.jpg', 'ensalada.jpg', 'salmon.jpg', 'YOGURT.png'
+];
+
+
+const BACK_IMG_URL = '{{ url_for("static", filename="back.jpg") }}'; 
+
+let cards = [];
+let flippedCards = [];
+let matchedPairs = 0;
+let lockBoard = false; 
+
+const boardElement = document.getElementById('memorama-board');
+const matchedCountElement = document.getElementById('matched-count');
+const winMessage = document.getElementById('win-message');
+const resetButton = document.getElementById('reset-memorama');
+
+
+function getImgUrl(name) {
+
+    return `{{ url_for("static", filename="") }}${name}`;
+}
+    function getImgUrl(name) {
+
+        return `{{ url_for("static", filename="") }}${name}`;
+    }
+
+    function initializeGame() {
+      
+        flippedCards = [];
+        matchedPairs = 0;
+        lockBoard = false;
+        winMessage.classList.add('d-none');
+        matchedCountElement.textContent = '0';
+        boardElement.innerHTML = '';
+
+        let cardValues = CARD_IMAGE_NAMES.concat(CARD_IMAGE_NAMES);
+
+        cardValues.sort(() => Math.random() - 0.5);
+
+        cards = cardValues.map((imgName, index) => ({
+            id: index,
+            imgName: imgName,
+            isFlipped: false,
+            isMatched: false
+        }));
+        
+
+        renderBoard();
+    }
+    
+   
+    function renderBoard() {
+        boardElement.innerHTML = '';
+        cards.forEach(card => {
+            const imgSrc = card.isFlipped || card.isMatched ? getImgUrl(card.imgName) : BACK_IMG_URL;
+            
+            const cardHtml = `
+                <div class="col d-flex justify-content-center">
+                    <button class="btn p-0 border-0" data-card-id="${card.id}" 
+                            style="width: 100%; max-width: 100px;">
+                        <div class="ratio ratio-1x1 shadow-sm rounded-3 overflow-hidden" 
+                             style="cursor: ${card.isMatched ? 'default' : 'pointer'};">
+                            <img src="${imgSrc}" 
+                                 alt="Carta" class="img-fluid" style="object-fit: cover;">
+                        </div>
+                    </button>
+                </div>
+            `;
+            boardElement.innerHTML += cardHtml;
+        });
+        
+        document.querySelectorAll('#memorama-board button').forEach(button => {
+            button.addEventListener('click', handleCardClick);
+        });
+    }
+
+    function checkForMatch() {
+        const [id1, id2] = flippedCards;
+        const card1 = cards.find(c => c.id === id1);
+        const card2 = cards.find(c => c.id === id2);
+
+        if (card1.imgName === card2.imgName) {
+           
+            card1.isMatched = true;
+            card2.isMatched = true;
+            matchedPairs++;
+            matchedCountElement.textContent = matchedPairs;
+            
+            flippedCards = []; 
+            lockBoard = false; 
+            renderBoard();
+            
+            if (matchedPairs === CARD_IMAGE_NAMES.length) {
+                winMessage.classList.remove('d-none');
+            }
+        } else {
+           
+            setTimeout(() => {
+                card1.isFlipped = false;
+                card2.isFlipped = false;
+                flippedCards = [];
+                lockBoard = false; 
+                renderBoard();
+            }, 1000);
+        }
+    }
+
+   
+    function handleCardClick(event) {
+        if (lockBoard) return; 
+
+        const button = event.currentTarget;
+        const cardId = parseInt(button.getAttribute('data-card-id'));
+        const clickedCard = cards.find(c => c.id === cardId);
+
+        if (clickedCard.isFlipped || clickedCard.isMatched) return;
+
+      
+        clickedCard.isFlipped = true;
+        flippedCards.push(cardId);
+        
+        renderBoard();
+
+        if (flippedCards.length === 2) {
+            lockBoard = true; 
+            checkForMatch();
+        }
+    }
+
+    resetButton.addEventListener('click', initializeGame);
+    initializeGame();
+</script>
+
+{% endblock %}
